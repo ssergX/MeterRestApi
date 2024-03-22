@@ -1,23 +1,17 @@
-from rest_framework import generics, viewsets, mixins
-from rest_framework.viewsets import GenericViewSet
-
+from rest_framework import generics
 from .models import Data
 from .serializers import DataSerializer
 
 
-class DataViewSet(mixins.CreateModelMixin,
-                  mixins.DestroyModelMixin,
-                  mixins.RetrieveModelMixin,
-                  mixins.UpdateModelMixin,
-                  mixins.ListModelMixin,
-                  GenericViewSet):
+class DataViewSet(generics.ListAPIView):
     queryset = Data.objects.all()
     serializer_class = DataSerializer
 
-    def get_queryset(self):
-        pk = self.kwargs.get("pk")
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
 
-        if not pk:
-            return Data.objects.all()
 
-        return Data.objects.filter(pk=pk)
+class DataDetailViewSet(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Data.objects.all()
+    serializer_class = DataSerializer
+    lookup_field = 'id'
